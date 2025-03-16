@@ -11,7 +11,7 @@ const server = http.createServer(app);
 // all about ws
 // create WS socket
 // strict origin cors configuration
-const allowedOrigins = ["http://localhost:9999"];
+const allowedOrigins = ["http://localhost:5173"];
 // socket start io server
 const io = new Server(server);
 // apis cors configuration
@@ -20,6 +20,7 @@ app.use(
     origin: function (origin, callback) {
       if (!origin) {
         return callback(new Error("Unauthorized"));
+        // return callback(null, true);
       }
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
@@ -48,9 +49,13 @@ app.use((err, req, res, next) => {
 // connection
 io.on("connection", (socket) => {
   console.log("A new user has connected", socket.id);
-  // socket.on("user-message", (data) => {
-  //   io.emit("message", data);
-  // });
+  socket.on("user-message", (data) => {
+    console.log("🚀 ~ socket.on ~ data:", data);
+    io.emit("message", data);
+  });
+  socket.on("disconnect", () => {
+    console.log("Client disconnected.", socket.id);
+  });
 });
 const PORT = process.env.PORT;
 // get router file
@@ -63,6 +68,8 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 // allow file to render
 app.use(express.static(path.resolve("./public")));
+// allow client to access images
+app.use("/public", express.static(path.join(__dirname, "public")));
 // routes entry point
 // testing route
 app.get("/", (req, res) => {
