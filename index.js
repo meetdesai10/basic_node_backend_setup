@@ -6,12 +6,15 @@ const http = require("http");
 const { Server } = require("socket.io");
 const cookieParser = require("cookie-parser");
 const { DBCONNECT } = require("./src/db/db");
+const os = require("node:os");
+const cluster = require("node:cluster");
+const numCPUs = os.cpus().length;
 const app = express();
 const server = http.createServer(app);
 // all about ws
 // create WS socket
 // strict origin cors configuration
-const allowedOrigins = ["http://localhost:5173"];
+const allowedOrigins = ["http://localhost:9999"];
 // socket start io server
 const io = new Server(server);
 // apis cors configuration
@@ -19,8 +22,8 @@ app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) {
-        return callback(new Error("Unauthorized"));
-        // return callback(null, true);
+        // return callback(new Error("Unauthorized"));
+        return callback(null, true);
       }
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
@@ -60,6 +63,7 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT;
 // get router file
 const userRoutes = require("./src/routes/user.routes");
+const pumpfunRoutes = require("./src/routes/pumpfun.routes");
 // set limit on data
 app.use(express.json({ limit: "500kb" }));
 // set cookie parser
@@ -77,14 +81,27 @@ app.get("/", (req, res) => {
 });
 // all the routes redirection
 app.use("/api/v1/users", userRoutes);
-// DB connection
-DBCONNECT()
-  .then((res) => {
-    console.log("MongoDb conected.");
-    server.listen(PORT, (res) => {
-      console.log("Server is listining on port: ", PORT);
+app.use("/api/v1/pumpfun", pumpfunRoutes);
+
+// running all core cpus for load balancing
+if (cluster.isMaster) {
+  // fork workers (one per CPU core)
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+    cluster.on("exit", (worker, code, signal) => {
+      console.log(`Worker ${worker.process.pid} died.`);
     });
-  })
-  .catch((err) => {
-    console.log("🚀 ~ DBCONNECT ~ err:", err?.message);
-  });
+  }
+} else {
+  // DB connection
+  DBCONNECT()
+    .then((res) => {
+      console.log("MongoDb conected.");
+      server.listen(PORT, (res) => {
+        console.log(`${process.pid} Server is listining on port: `, PORT);
+      });
+    })
+    .catch((err) => {
+      console.log("🚀 ~ DBCONNECT ~ err:", err?.message);
+    });
+}
