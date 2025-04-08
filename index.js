@@ -74,6 +74,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.resolve("./public")));
 // allow client to access images
 app.use("/public", express.static(path.join(__dirname, "public")));
+app.use("/singleFile", express.static(path.join(__dirname, "singleFile")));
+app.use("/multipleFiles", express.static(path.join(__dirname, "multipleFiles")));
 // routes entry point
 // testing route
 app.get("/", (req, res) => {

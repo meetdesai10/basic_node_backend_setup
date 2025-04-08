@@ -27,7 +27,6 @@ async function register(req, res) {
     token: generateToken,
   });
 }
-
 // login
 async function login(req, res) {
   const { email, password } = req.body;
@@ -53,24 +52,44 @@ async function login(req, res) {
     token: generateToken,
   });
 }
-
 // get user
 async function getUser(req, res) {
   return apiResponse(res, 200, "User found", { user: req.user });
 }
-
+// dynamic file uploads
 function handleProfilePhoto(req, res) {
-  console.log("🚀 ~ handleProfilePhoto ~ req:", req?.body?.email);
-  console.log("🚀 ~ handleProfilePhoto ~ req:", req?.body?.password);
-  const profilePhoto = req.files?.profile[0]?.path;
+  const profilePhoto = req.files?.profile;
+  console.log(
+    "🚀 ~ handleProfilePhoto ~ req.files?.profile:",
+    req.files?.profile
+  );
   // do work like store image or upload another platform like cloudnary
   // fs.unlinkSync(profilePhoto);
   apiResponse(res, 200, "profile", {
-    profile: `http://localhost:9999/${profilePhoto.replace(
-      /^public[\\/]/,
-      ""
-    )}`,
+    photos: profilePhoto,
   });
 }
-
-module.exports = { register, login, getUser, handleProfilePhoto };
+// single file upload
+function singleFileUpload(req, res) {
+  const profilePhoto = req.file
+  console.log("🚀 ~ singleFileUpload ~ profilePhoto:", profilePhoto)
+  apiResponse(res, 200, "image", {
+    photos: profilePhoto,
+  });
+}
+// ultiple file upload
+function multipleFileUpload(req, res) {
+  const profilePhoto = req.files
+  console.log("🚀 ~ singleFileUpload ~ profilePhoto:", profilePhoto)
+  apiResponse(res, 200, "image", {
+    photos: profilePhoto,
+  });
+}
+module.exports = {
+  register,
+  login,
+  getUser,
+  handleProfilePhoto,
+  singleFileUpload,
+  multipleFileUpload
+};
