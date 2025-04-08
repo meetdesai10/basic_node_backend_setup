@@ -15,20 +15,17 @@ router.route("/upload-photo").post(
   upload.fields([
     {
       name: "profile",
-      maxCount: 4,
+      maxCount: 2,
     },
   ]),
   asyncHandler(userController.handleProfilePhoto)
 );
-
 // upload only one file
 router
   .route("/upload-single")
   .post(uploadSindleFile, asyncHandler(userController.singleFileUpload));
-
 // upload multiple file
 router
   .route("/upload-multiple")
   .post(uploadMultipleFile, asyncHandler(userController.multipleFileUpload));
-
 module.exports = router;

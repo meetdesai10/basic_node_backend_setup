@@ -57,12 +57,8 @@ async function getUser(req, res) {
   return apiResponse(res, 200, "User found", { user: req.user });
 }
 // dynamic file uploads
-function handleProfilePhoto(req, res) {
+ function handleProfilePhoto(req, res) {
   const profilePhoto = req.files?.profile;
-  console.log(
-    "🚀 ~ handleProfilePhoto ~ req.files?.profile:",
-    req.files?.profile
-  );
   // do work like store image or upload another platform like cloudnary
   // fs.unlinkSync(profilePhoto);
   apiResponse(res, 200, "profile", {
@@ -70,17 +66,15 @@ function handleProfilePhoto(req, res) {
   });
 }
 // single file upload
-function singleFileUpload(req, res) {
-  const profilePhoto = req.file
-  console.log("🚀 ~ singleFileUpload ~ profilePhoto:", profilePhoto)
+async function singleFileUpload(req, res) {
+  const profilePhoto = req.file;
   apiResponse(res, 200, "image", {
     photos: profilePhoto,
   });
 }
 // ultiple file upload
-function multipleFileUpload(req, res) {
-  const profilePhoto = req.files
-  console.log("🚀 ~ singleFileUpload ~ profilePhoto:", profilePhoto)
+async function multipleFileUpload(req, res) {
+  const profilePhoto = req.files;
   apiResponse(res, 200, "image", {
     photos: profilePhoto,
   });
@@ -91,5 +85,5 @@ module.exports = {
   getUser,
   handleProfilePhoto,
   singleFileUpload,
-  multipleFileUpload
+  multipleFileUpload,
 };
