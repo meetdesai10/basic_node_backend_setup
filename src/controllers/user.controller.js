@@ -1,7 +1,9 @@
 const { user } = require("../models/user.model");
 const { apiResponse } = require("../utils/apiResponse");
+const { getDataUri } = require("../utils/bufferGenerater");
 const ThrowError = require("../utils/throwError");
 const fs = require("fs");
+const cloudinary = require("cloudinary");
 // register
 async function register(req, res) {
   const { email, fullName, mobile, password } = req.body;
@@ -57,7 +59,7 @@ async function getUser(req, res) {
   return apiResponse(res, 200, "User found", { user: req.user });
 }
 // dynamic file uploads
- function handleProfilePhoto(req, res) {
+function handleProfilePhoto(req, res) {
   const profilePhoto = req.files?.profile;
   // do work like store image or upload another platform like cloudnary
   // fs.unlinkSync(profilePhoto);
@@ -67,16 +69,28 @@ async function getUser(req, res) {
 }
 // single file upload
 async function singleFileUpload(req, res) {
-  const profilePhoto = req.file;
+  const fileRaw = req.file;
+  const fileBuffer = await getDataUri(fileRaw);
+  const uploadCould = await cloudinary.v2.uploader.upload(fileBuffer?.content);
   apiResponse(res, 200, "image", {
-    photos: profilePhoto,
+    file: {
+      url: uploadCould?.url,
+      file_id: uploadCould.public_id,
+    },
   });
 }
 // ultiple file upload
 async function multipleFileUpload(req, res) {
-  const profilePhoto = req.files;
+  const filesRaw = req.files;
+  const fileBuffer = await Promise.all(
+    filesRaw?.map(async (item) => {
+      const buffer = await getDataUri(item);
+      const upload = await cloudinary.v2.uploader.upload(buffer.content);
+      return { url: upload.url, img_id: upload.public_id };
+    })
+  );
   apiResponse(res, 200, "image", {
-    photos: profilePhoto,
+    files: fileBuffer,
   });
 }
 module.exports = {

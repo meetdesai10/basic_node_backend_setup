@@ -4,6 +4,7 @@ const cors = require("cors");
 const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
+const cloudinary = require("cloudinary");
 const cookieParser = require("cookie-parser");
 const { DBCONNECT } = require("./src/db/db");
 const os = require("node:os");
@@ -60,6 +61,14 @@ io.on("connection", (socket) => {
     console.log("Client disconnected.", socket.id);
   });
 });
+
+// cloudinarr configuration
+cloudinary.v2.config({
+  cloud_name: process.env.COULD_NAME,
+  api_key: process.env.COULD_API,
+  api_secret: process.env.COULD_SECRETE,
+});
+
 const PORT = process.env.PORT;
 // get router file
 const userRoutes = require("./src/routes/user.routes");
@@ -75,7 +84,10 @@ app.use(express.static(path.resolve("./public")));
 // allow client to access images
 app.use("/public", express.static(path.join(__dirname, "public")));
 app.use("/singleFile", express.static(path.join(__dirname, "singleFile")));
-app.use("/multipleFiles", express.static(path.join(__dirname, "multipleFiles")));
+app.use(
+  "/multipleFiles",
+  express.static(path.join(__dirname, "multipleFiles"))
+);
 // routes entry point
 // testing route
 app.get("/", (req, res) => {
